@@ -1,4 +1,4 @@
-﻿#define USE_TEST_REPO1
+﻿#define USE_TEST_REP1
 
 using CommandLine;
 using CommandLine.Text;
@@ -66,7 +66,7 @@ namespace GillSoft.SvnMissingMerges
 
                 DumpParameters();
             }
-            catch (MemberAccessException ex)
+            catch (MemberAccessException)
             {
                 ShowHelp();
                 throw new InvalidCommandLineParametersException(ExitCodes.InvalidParameters, string.Empty);
@@ -94,7 +94,11 @@ namespace GillSoft.SvnMissingMerges
             io.WriteLine("  Target Repository: " + this.TargetRepository);
             if (this.EndVersion.HasValue)
             {
-                io.WriteLine("End Version: " + this.EndVersion);
+                io.WriteLine("  End Revision     : " + this.EndVersion);
+            }
+            else
+            {
+                io.WriteLine("  End Revision     : " + "HEAD");
             }
             io.WriteLine("  Log Type         : " + this.LogType);
             io.WriteLine();

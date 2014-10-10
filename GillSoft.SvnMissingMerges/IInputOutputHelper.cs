@@ -10,5 +10,7 @@ namespace GillSoft.SvnMissingMerges
         void Wait();
         void WriteLine(string value, params object[] args);
         void WriteLine();
+
+        void Write(string value, params object[] args);
     }
 }

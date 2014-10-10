@@ -23,5 +23,10 @@ namespace GillSoft.SvnMissingMerges
         {
             Console.WriteLine();
         }
+
+        void IInputOutputHelper.Write(string value, params object[] args)
+        {
+            Console.Write(value, args);
+        }
     }
 }

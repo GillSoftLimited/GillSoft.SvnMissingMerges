@@ -19,4 +19,4 @@ Both dependencies are resolved using Nuget. Just clone the repository and build.
 
 -l, --log       Type of log to be created. Will log to console if not specified. Allowed values are Console, Xml, Text.
 
--?, --help      Show Help`
+-?, --help      Show Help

@@ -26,14 +26,19 @@ We created a branch and delibrately missed some revisions while merging into the
 
 Parameters:
   Source Repository: file://ARIA/shared/svntest/repo/testrepo/branches/branch_001
+  
   Target Repository: file://ARIA/shared/svntest/repo/testrepo/trunk
+  
   End Revision     : HEAD
+  
   Log Type         : Console
 
 Getting revision information from source branch...Done.
+
 Getting merged ranges in the target repository...Done.
 
 Source Repository: file://ARIA/shared/svntest/repo/testrepo/branches/branch_001
+
 Target Repository: file://ARIA/shared/svntest/repo/testrepo/trunk
 
 

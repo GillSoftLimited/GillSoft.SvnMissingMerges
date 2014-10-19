@@ -76,7 +76,8 @@ namespace GillSoft.SvnMissingMerges
 
                     var minRevision = branchRevisions.Select(a => a.Revision).Min();
 
-                    var mergedRanges = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository, commandLineParameters.EndVersion);
+                    var mergedRanges = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository,
+                        branchFirstRevision, commandLineParameters.EndVersion);
 
                     var missingRevisions = branchRevisions.Where(a => !mergedRanges.Any(b => a.Revision >= b.Start && a.Revision <= b.End)).ToList();
 
@@ -115,7 +116,7 @@ namespace GillSoft.SvnMissingMerges
             resultWriter.End();
         }
 
-        private static List<RangeItem> GetMergedRangesInTargetBranch(IInputOutputHelper io, string sourceRepository, string targetRepository, long? endVersion)
+        private static List<RangeItem> GetMergedRangesInTargetBranch(IInputOutputHelper io, string sourceRepository, string targetRepository, long? startRevision, long? endVersion)
         {
             io.Write("Getting merged ranges in the target repository...");
             var sourceRepoName = Path.GetFileName(sourceRepository);
@@ -130,7 +131,7 @@ namespace GillSoft.SvnMissingMerges
             {
                 RetrieveAllProperties = true,
                 RetrieveChangedPaths = true,
-                Start = new SvnRevision(1),
+                Start = startRevision.HasValue ? new SvnRevision(startRevision.Value) : new SvnRevision(1),
                 End = endVersion.HasValue ? new SvnRevision(endVersion.Value) : new SvnRevision(SvnRevisionType.Head),
                 StrictNodeHistory = true,
             };

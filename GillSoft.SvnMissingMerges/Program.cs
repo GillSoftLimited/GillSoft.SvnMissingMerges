@@ -74,8 +74,6 @@ namespace GillSoft.SvnMissingMerges
                 {
                     branchRevisions.Sort((a, b) => { return decimal.Compare(a.Revision, b.Revision); });
 
-                    var minRevision = branchRevisions.Select(a => a.Revision).Min();
-
                     var mergedRanges = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository,
                         branchFirstRevision, commandLineParameters.EndVersion);
 

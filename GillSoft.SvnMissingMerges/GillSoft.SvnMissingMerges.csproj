@@ -83,6 +83,7 @@
     <Compile Include="ResultWriterConsole.cs" />
     <Compile Include="ResultWriterText.cs" />
     <Compile Include="ResultWriterXml.cs" />
+    <Compile Include="SubversionHelper.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="XmlHelper.cs" />
   </ItemGroup>

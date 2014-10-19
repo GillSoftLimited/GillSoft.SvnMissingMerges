@@ -35,7 +35,12 @@ namespace GillSoft.SvnMissingMerges
             try
             {
 
-                if (!CommandLine.Parser.Default.ParseArguments(Environment.GetCommandLineArgs(), this))
+                var parser = new Parser(a => { 
+                    a.CaseSensitive = false;
+                    a.IgnoreUnknownArguments = true;
+                });
+
+                if (!parser.ParseArguments(Environment.GetCommandLineArgs(), this))
                 {
                     this.ShowHelp();
                     throw new InvalidCommandLineParametersException(ExitCodes.InvalidParameters, string.Empty);

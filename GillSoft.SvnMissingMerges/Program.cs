@@ -54,32 +54,44 @@ namespace GillSoft.SvnMissingMerges
         {
             var commandLineParameters = new CommandLineParameters(io);
 
-            var branchRevisions = GetSourceBranchRevisions(io, commandLineParameters.SourceRepository, commandLineParameters.EndVersion);
+            var branchFirstRevision = SubversionHelper.GetFirstRevision(io, commandLineParameters.SourceRepository);
 
-            if (branchRevisions.Count == 0)
+            if (!branchFirstRevision.HasValue)
             {
                 io.WriteLine("No branch revisions found.");
             }
             else
             {
-                branchRevisions.Sort((a, b) => { return decimal.Compare(a.Revision, b.Revision); });
+                io.Write("Getting revision information from  branch...");
+                var branchRevisions = SubversionHelper.GetBranchLog(commandLineParameters.SourceRepository, commandLineParameters.EndVersion);
+                io.WriteLine("Done.");
 
-                var minRevision = branchRevisions.Select(a => a.Revision).Min();
-
-                var mergedRanges = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository, commandLineParameters.EndVersion);
-
-                var missingRevisions = branchRevisions.Where(a => !mergedRanges.Any(b => a.Revision >= b.Start && a.Revision <= b.End)).ToList();
-
-                if (missingRevisions.Count == 0)
+                if (branchRevisions.Count == 0)
                 {
-                    io.WriteLine("YAY!!! Nothing amiss!!!");
+                    io.WriteLine("No branch revisions found.");
                 }
                 else
                 {
-                    DumpResults(io, commandLineParameters, missingRevisions);
+                    branchRevisions.Sort((a, b) => { return decimal.Compare(a.Revision, b.Revision); });
+
+                    var minRevision = branchRevisions.Select(a => a.Revision).Min();
+
+                    var mergedRanges = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository, commandLineParameters.EndVersion);
+
+                    var missingRevisions = branchRevisions.Where(a => !mergedRanges.Any(b => a.Revision >= b.Start && a.Revision <= b.End)).ToList();
+
+                    if (missingRevisions.Count == 0)
+                    {
+                        io.WriteLine("YAY!!! Nothing amiss!!!");
+                    }
+                    else
+                    {
+                        DumpResults(io, commandLineParameters, missingRevisions);
+                    }
                 }
             }
         }
+
 
         private static void DumpResults(IInputOutputHelper io, CommandLineParameters commandLineParameters, List<SvnLogEventArgs> missingRevisions)
         {
@@ -103,39 +115,6 @@ namespace GillSoft.SvnMissingMerges
             resultWriter.End();
         }
 
-        private static List<SvnLogEventArgs> GetSourceBranchRevisions(IInputOutputHelper io, string repository, long? endVersion)
-        {
-            io.Write("Getting revision information from source branch...");
-            var res = new List<SvnLogEventArgs>();
-
-            var client = new SvnClient();
-
-            var target = new Uri(repository);
-
-            var options = new SvnLogArgs
-            {
-                RetrieveMergedRevisions = true,
-                RetrieveAllProperties = true,
-                RetrieveChangedPaths = true,
-                Start = new SvnRevision(1),
-                End = endVersion.HasValue ? new SvnRevision(endVersion.Value) : new SvnRevision(SvnRevisionType.Head),
-                StrictNodeHistory = true,
-            };
-
-            Collection<SvnLogEventArgs> res2 = null;
-
-            if (client.GetLog(target, options, out res2))
-            {
-                if (res2 != null)
-                {
-                    res.AddRange(res2);
-                }
-            }
-
-            io.WriteLine("Done.");
-            return res;
-        }
-
         private static List<RangeItem> GetMergedRangesInTargetBranch(IInputOutputHelper io, string sourceRepository, string targetRepository, long? endVersion)
         {
             io.Write("Getting merged ranges in the target repository...");
@@ -149,7 +128,6 @@ namespace GillSoft.SvnMissingMerges
 
             var options = new SvnLogArgs
             {
-                RetrieveMergedRevisions = true,
                 RetrieveAllProperties = true,
                 RetrieveChangedPaths = true,
                 Start = new SvnRevision(1),

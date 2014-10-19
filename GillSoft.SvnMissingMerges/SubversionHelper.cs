@@ -10,10 +10,10 @@ namespace GillSoft.SvnMissingMerges
     internal static class SubversionHelper
     {
        
-        private static SvnClient GetSvnClient()
+        public static SvnClient GetSvnClient()
         {
-            var client = new SvnClient();
-            return client;
+            var res = new SvnClient();
+            return res;
         }
 
         public static long? GetFirstRevision(IInputOutputHelper io, string repository)
@@ -47,7 +47,7 @@ namespace GillSoft.SvnMissingMerges
         {
             var res = new List<SvnLogEventArgs>();
 
-            var client = new SvnClient();
+            var client = GetSvnClient();
 
             var target = new Uri(repository);
 
@@ -73,6 +73,7 @@ namespace GillSoft.SvnMissingMerges
 
             return res;
         }
+
 
     }
 }

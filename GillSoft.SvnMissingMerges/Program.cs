@@ -122,7 +122,7 @@ namespace GillSoft.SvnMissingMerges
             var targetRepoName = Path.GetFileName(targetRepository);
             var res = new List<RangeItem>();
 
-            var client = new SvnClient();
+            var client = SubversionHelper.GetSvnClient();
 
             var target = new Uri(targetRepository);
 
@@ -140,7 +140,7 @@ namespace GillSoft.SvnMissingMerges
                 if (!e.ChangedPaths.Any(a => a.Path.EndsWith(targetRepoName, StringComparison.CurrentCultureIgnoreCase)))
                     return;
 
-                var client2 = new SvnClient();
+                var client2 = SubversionHelper.GetSvnClient();
                 var target2 = new SvnUriTarget(targetRepository, new SvnRevision(e.Revision));
 
                 var mergeInfo = default(SvnAppliedMergeInfo);

@@ -16,7 +16,6 @@ namespace GillSoft.SvnMissingMerges
         public void Show()
         {
             io.WriteLine("SvnMissingMerges: Find revisions missed in merging of two branches");
-            io.WriteLine("Ver. " + ThisAssembly.AssemblyVersion + " (c) 2014 " + ThisAssembly.AssemblyCompany);
             io.WriteLine();
             io.WriteLine("***********************************************************************************");
             io.WriteLine("Disclaimer:");

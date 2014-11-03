@@ -83,8 +83,6 @@ namespace GillSoft.SvnMissingMerges
             var help = new HelpText
             {
                 AddDashesToOption = true,
-                Copyright = ThisAssembly.AssemblyCopyright,
-                Heading = ThisAssembly.AssemblyProduct,
             };
             help.AddOptions(this);
             var helpText = help.ToString();

@@ -64,10 +64,10 @@ namespace GillSoft.SvnMissingMerges
                 var tasks = new List<Task>();
 
                 io.WriteLine("Getting revision information from source branch...");
-                var client = GetSvnClient();
                 var mergesEligible = new List<SvnMergesEligibleEventArgs>();
                 tasks.Add(Task.Factory.StartNew(delegate
                 {
+                    var client = GetSvnClient();
                     var args = new SvnMergesEligibleArgs
                     {
                         Range = new SvnRevisionRange(new SvnRevision(branchFirstRevision.Value), new SvnRevision(SvnRevisionType.Head)),
@@ -76,6 +76,7 @@ namespace GillSoft.SvnMissingMerges
                     var list = client.ListMergesEligible(new Uri(commandLineParameters.TargetRepository),
                         new Uri(commandLineParameters.SourceRepository), args, delegate(object sender, SvnMergesEligibleEventArgs e)
                         {
+                            e.Detach();
                             mergesEligible.Add(e);
                         });
                 }));
@@ -85,6 +86,7 @@ namespace GillSoft.SvnMissingMerges
                 var mergesMerged = new List<SvnMergesMergedEventArgs>();
                 tasks.Add(Task.Factory.StartNew(delegate
                 {
+                    var client = GetSvnClient();
                     var args = new SvnMergesMergedArgs
                     {
                         Range = new SvnRevisionRange(new SvnRevision(branchFirstRevision.Value), new SvnRevision(SvnRevisionType.Head)),
@@ -93,6 +95,7 @@ namespace GillSoft.SvnMissingMerges
                     var list = client.ListMergesMerged(new Uri(commandLineParameters.TargetRepository),
                         new Uri(commandLineParameters.SourceRepository), args, delegate(object sender, SvnMergesMergedEventArgs e)
                         {
+                            e.Detach();
                             mergesMerged.Add(e);
                         });
                 }));

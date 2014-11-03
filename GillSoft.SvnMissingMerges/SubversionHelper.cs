@@ -30,6 +30,7 @@ namespace GillSoft.SvnMissingMerges
             var options = new SvnLogArgs
             {
                 Start = new SvnRevision(1),
+                End = new SvnRevision(SvnRevisionType.Head),
                 StrictNodeHistory = true,
                 Limit = 1
             };
@@ -61,6 +62,8 @@ namespace GillSoft.SvnMissingMerges
             }
             else
             {
+                io.WriteLine("Source branch was created in rev: " + branchFirstRevision.Value);
+                
                 var tasks = new List<Task>();
 
                 io.WriteLine("Getting revision information from source branch...");

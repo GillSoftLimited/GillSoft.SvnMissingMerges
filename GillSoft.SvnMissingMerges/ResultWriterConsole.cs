@@ -16,7 +16,7 @@ namespace GillSoft.SvnMissingMerges
             this.io = io;
         }
 
-        private void WriteRevisionDetails(SvnLogEventArgs revision)
+        private void WriteRevisionDetails(SvnMergesEligibleEventArgs revision)
         {
             io.WriteLine("Revision: {0}", revision.Revision);
             io.WriteLine("    Author: {0}", revision.Author);
@@ -33,7 +33,7 @@ namespace GillSoft.SvnMissingMerges
         }
 
 
-        void IResultWriter.WriteResults(CommandLineParameters commandLineParameters, List<SvnLogEventArgs> missingRevisions)
+        void IResultWriter.WriteResults(CommandLineParameters commandLineParameters, List<SvnMergesEligibleEventArgs> missingRevisions)
         {
             io.WriteLine();
             io.WriteLine("Source Repository: {0}", commandLineParameters.SourceRepository);

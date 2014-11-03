@@ -1,4 +1,4 @@
-﻿#define USE_TEST_REP1
+﻿#define USE_TEST_REPO1
 
 using CommandLine;
 using CommandLine.Text;

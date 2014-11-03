@@ -8,7 +8,7 @@ namespace GillSoft.SvnMissingMerges
 {
     public interface IResultWriter
     {
-        void WriteResults(CommandLineParameters commandLineParameters, List<SvnLogEventArgs> missingRevisions);
+        void WriteResults(CommandLineParameters commandLineParameters, List<SvnMergesEligibleEventArgs> missingRevisions);
 
         void End();
 

@@ -20,7 +20,7 @@ namespace GillSoft.SvnMissingMerges
             return res;
         }
 
-        public static long? GetFirstRevision(IInputOutputHelper io, string repository)
+        private static long? GetFirstRevision(IInputOutputHelper io, string repository)
         {
             var res = default(long?);
             var client = GetSvnClient();
@@ -47,42 +47,11 @@ namespace GillSoft.SvnMissingMerges
             return res;
         }
 
-        public static List<SvnLogEventArgs> GetBranchLog(string repository, long? endVersion)
-        {
-            var res = new List<SvnLogEventArgs>();
-
-            var client = GetSvnClient();
-
-            var target = new Uri(repository);
-
-            var options = new SvnLogArgs
-            {
-                RetrieveMergedRevisions = true,
-                RetrieveAllProperties = true,
-                RetrieveChangedPaths = true,
-                Start = new SvnRevision(1),
-                End = endVersion.HasValue ? new SvnRevision(endVersion.Value) : new SvnRevision(SvnRevisionType.Head),
-                StrictNodeHistory = true,
-            };
-
-            Collection<SvnLogEventArgs> log = null;
-
-            if (client.GetLog(target, options, out log))
-            {
-                if (log != null)
-                {
-                    res.AddRange(log);
-                }
-            }
-
-            return res;
-        }
-
         #endregion
 
-        public static List<SvnLogEventArgs> GetMissingRevisions(IInputOutputHelper io, CommandLineParameters commandLineParameters)
+        public static List<SvnMergesEligibleEventArgs> GetMissingRevisions(IInputOutputHelper io, CommandLineParameters commandLineParameters)
         {
-            var res = new List<SvnLogEventArgs>();
+            var res = new List<SvnMergesEligibleEventArgs>();
 
             var branchFirstRevision = SubversionHelper.GetFirstRevision(io, commandLineParameters.SourceRepository);
 
@@ -95,82 +64,49 @@ namespace GillSoft.SvnMissingMerges
                 var tasks = new List<Task>();
 
                 io.WriteLine("Getting revision information from source branch...");
-                var branchRevisions = new List<SvnLogEventArgs>();
+                var client = GetSvnClient();
+                var mergesEligible = new List<SvnMergesEligibleEventArgs>();
                 tasks.Add(Task.Factory.StartNew(delegate
                 {
-                    var list = SubversionHelper.GetBranchLog(commandLineParameters.SourceRepository, commandLineParameters.EndVersion);
-                    branchRevisions.AddRange(list);
+                    var args = new SvnMergesEligibleArgs
+                    {
+                        Range = new SvnRevisionRange(new SvnRevision(branchFirstRevision.Value), new SvnRevision(SvnRevisionType.Head)),
+                        RetrieveChangedPaths = true,
+                    };
+                    var list = client.ListMergesEligible(new Uri(commandLineParameters.TargetRepository),
+                        new Uri(commandLineParameters.SourceRepository), args, delegate(object sender, SvnMergesEligibleEventArgs e)
+                        {
+                            mergesEligible.Add(e);
+                        });
                 }));
 
 
                 io.WriteLine("Getting merged ranges in the target branch...");
-                var mergedRanges = new List<RangeItem>();
+                var mergesMerged = new List<SvnMergesMergedEventArgs>();
                 tasks.Add(Task.Factory.StartNew(delegate
                 {
-                    var list = GetMergedRangesInTargetBranch(io, commandLineParameters.SourceRepository, commandLineParameters.TargetRepository,
-                        branchFirstRevision, commandLineParameters.EndVersion);
-                    mergedRanges.AddRange(list);
+                    var args = new SvnMergesMergedArgs
+                    {
+                        Range = new SvnRevisionRange(new SvnRevision(branchFirstRevision.Value), new SvnRevision(SvnRevisionType.Head)),
+                        RetrieveChangedPaths = false,
+                    };
+                    var list = client.ListMergesMerged(new Uri(commandLineParameters.TargetRepository),
+                        new Uri(commandLineParameters.SourceRepository), args, delegate(object sender, SvnMergesMergedEventArgs e)
+                        {
+                            mergesMerged.Add(e);
+                        });
                 }));
 
                 io.WriteLine("Please wait...");
 
                 Task.WaitAll(tasks.ToArray());
 
-                var missingRevisions = branchRevisions.Where(a => !mergedRanges.Any(b => a.Revision >= b.Start && a.Revision <= b.End)).ToList();
+                var missingRevisions = mergesEligible.Where(a => !mergesMerged.Any(b => b.Revision == a.Revision)).ToList();
 
                 res.AddRange(missingRevisions);
             }
             return res;
         }
-
-        private static List<RangeItem> GetMergedRangesInTargetBranch(IInputOutputHelper io, string sourceRepository, string targetRepository, long? startRevision, long? endVersion)
-        {
-            var sourceRepoName = Path.GetFileName(sourceRepository);
-            var targetRepoName = Path.GetFileName(targetRepository);
-            var res = new List<RangeItem>();
-
-            var client = SubversionHelper.GetSvnClient();
-
-            var target = new Uri(targetRepository);
-
-            var options = new SvnLogArgs
-            {
-                RetrieveAllProperties = true,
-                RetrieveChangedPaths = true,
-                Start = startRevision.HasValue ? new SvnRevision(startRevision.Value) : new SvnRevision(1),
-                End = endVersion.HasValue ? new SvnRevision(endVersion.Value) : new SvnRevision(SvnRevisionType.Head),
-                StrictNodeHistory = true,
-            };
-
-            client.Log(target, options, delegate(object sender, SvnLogEventArgs e)
-            {
-                if (!e.ChangedPaths.Any(a => a.Path.EndsWith(targetRepoName, StringComparison.CurrentCultureIgnoreCase)))
-                    return;
-
-                var client2 = SubversionHelper.GetSvnClient();
-                var target2 = new SvnUriTarget(targetRepository, new SvnRevision(e.Revision));
-
-                var mergeInfo = default(SvnAppliedMergeInfo);
-
-                if (!client2.GetAppliedMergeInfo(target2, out mergeInfo))
-                    return;
-
-                if (mergeInfo == null)
-                    return;
-
-                var mergeInfoItem = mergeInfo.AppliedMerges.Where(a => a.Uri.ToString().EndsWith(sourceRepoName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-                if (mergeInfoItem == null)
-                    return;
-
-                var mergeRanges = mergeInfoItem.MergeRanges.Select(a => new RangeItem(a.Start, a.End)).ToList();
-
-                res.AddRange(mergeRanges);
-            });
-
-
-            return res;
-        }
-
 
     }
 }

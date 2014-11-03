@@ -49,7 +49,7 @@ namespace GillSoft.SvnMissingMerges
 
             doc.AppendChild(body);
         }
-        void IResultWriter.WriteResults(CommandLineParameters commandLineParameters, List<SvnLogEventArgs> missingRevisions)
+        void IResultWriter.WriteResults(CommandLineParameters commandLineParameters, List<SvnMergesEligibleEventArgs> missingRevisions)
         {
             WriteCommandLineParameters(commandLineParameters);
 
@@ -78,7 +78,7 @@ namespace GillSoft.SvnMissingMerges
 
         }
 
-        private void WriteRevisionDetails(SvnLogEventArgs revision)
+        private void WriteRevisionDetails(SvnMergesEligibleEventArgs revision)
         {
             var elem = body.AddElement(ElementNames.RevisionInfo)
                 .AddAttribute(AttributeNames.Revision, revision.Revision)

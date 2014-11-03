@@ -61,7 +61,7 @@ namespace GillSoft.SvnMissingMerges
             Exit(exitCode);
         }
 
-        private static void DumpResults(IInputOutputHelper io, CommandLineParameters commandLineParameters, List<SvnLogEventArgs> missingRevisions)
+        private static void DumpResults(IInputOutputHelper io, CommandLineParameters commandLineParameters, List<SvnMergesEligibleEventArgs> missingRevisions)
         {
             IResultWriter resultWriter = new ResultWriterConsole(io);
             switch (commandLineParameters.LogType)
